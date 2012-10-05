@@ -11,7 +11,7 @@ my $pwd = cwd();
 
 our $HttpConfig = qq{
     lua_package_path "$pwd/lib/?.lua;;";
-    resolver 192.168.101.11;
+    resolver 8.8.8.8;
 };
 
 $ENV{TEST_NGINX_RESOLVER} = '8.8.8.8';
