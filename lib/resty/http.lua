@@ -93,7 +93,7 @@ local function adjustrequest(reqt)
 
     nreqt.fetch_size = reqt.fetch_size or 16*1024 -- 16k
     nreqt.max_body_size = reqt.max_body_size or 1024*1024*1024 -- 1024mb
-    
+
     if reqt.keepalive then
         nreqt.headers['connection'] = 'keep-alive'
     end
@@ -271,10 +271,10 @@ function request(self, reqt)
             nreqt.headers['Content-Length'] = #req_body
         end
     end
-    
+
     -- send request line and headers
     local reqline = string.format("%s %s HTTP/1.1\r\n", nreqt.method or "GET", nreqt.uri)
-    local h = "\r\n"
+    local h = ""
     for i, v in pairs(nreqt.headers) do
         -- fix cookie is a table value
         if type(v) == "table" and i == "cookie" then
@@ -282,15 +282,15 @@ function request(self, reqt)
         end
         h = i .. ": " .. v .. "\r\n" .. h
     end
-    
+
     h = h .. '\r\n' -- close headers
-    
+
     bytes, err = sock:send(reqline .. h)
     if err then
         sock:close()
         return nil, err
     end
-    
+
     -- send req_body, if exists
     if req_body_type == 'string' then
         bytes, err = sock:send(req_body)
@@ -360,10 +360,10 @@ function request(self, reqt)
             return nil, "read body failed " .. err
         end
     end
-    
+
     if nreqt.keepalive then
         sock:setkeepalive(nreqt.keepalive)
-    else 
+    else
         sock:close()
     end
 
