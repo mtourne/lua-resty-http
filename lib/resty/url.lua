@@ -177,24 +177,24 @@ end
 -- Returns
 --   a stringing with the corresponding URL
 -----------------------------------------------------------------------------
-function build(parsed)
-    local ppath = parse_path(parsed.path or "")
-    local url = build_path(ppath)
+function build(parsed, unsafe)
+    local ppath = parse_path(parsed.path or "", unsafe)
+    local url = build_path(ppath, unsafe)
     if parsed.params then url = url .. ";" .. parsed.params end
     if parsed.query then url = url .. "?" .. parsed.query end
-	local authority = parsed.authority
-	if parsed.host then
-		authority = parsed.host
-		if parsed.port then authority = authority .. ":" .. parsed.port end
-		local userinfo = parsed.userinfo
-		if parsed.user then
-			userinfo = parsed.user
-			if parsed.password then
-				userinfo = userinfo .. ":" .. parsed.password
-			end
-		end
-		if userinfo then authority = userinfo .. "@" .. authority end
-	end
+    local authority = parsed.authority
+    if parsed.host then
+        authority = parsed.host
+        if parsed.port then authority = authority .. ":" .. parsed.port end
+        local userinfo = parsed.userinfo
+        if parsed.user then
+            userinfo = parsed.user
+            if parsed.password then
+                userinfo = userinfo .. ":" .. parsed.password
+            end
+        end
+        if userinfo then authority = userinfo .. "@" .. authority end
+    end
     if authority then url = "//" .. authority .. url end
     if parsed.scheme then url = parsed.scheme .. ":" .. url end
     if parsed.fragment then url = url .. "#" .. parsed.fragment end
@@ -233,7 +233,7 @@ function absolute(base_url, relative_url)
                         relative_parsed.query = base_parsed.query
                     end
                 end
-            else    
+            else
                 relative_parsed.path = absolute_path(base_parsed.path or "",
                     relative_parsed.path)
             end
@@ -249,16 +249,18 @@ end
 -- Returns
 --   segment: a table with one entry per segment
 -----------------------------------------------------------------------------
-function parse_path(path)
-	local parsed = {}
-	path = path or ""
-	--path = string.gsub(path, "%s", "")
-	string.gsub(path, "([^/]+)", function (s) table.insert(parsed, s) end)
-	for i = 1, table.getn(parsed) do
-		parsed[i] = unescape(parsed[i])
-	end
-	if string.sub(path, 1, 1) == "/" then parsed.is_absolute = 1 end
-	if string.sub(path, -1, -1) == "/" then parsed.is_directory = 1 end
+function parse_path(path, unsafe)
+    local parsed = {}
+    path = path or ""
+    --path = string.gsub(path, "%s", "")
+    string.gsub(path, "([^/]+)", function (s) table.insert(parsed, s) end)
+    if not unsafe then
+       for i = 1, table.getn(parsed) do
+          parsed[i] = unescape(parsed[i])
+       end
+    end
+    if string.sub(path, 1, 1) == "/" then parsed.is_absolute = 1 end
+    if string.sub(path, -1, -1) == "/" then parsed.is_directory = 1 end
 	return parsed
 end
 
